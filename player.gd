@@ -11,14 +11,36 @@ extends CharacterBody3D
 @export var min_pitch: float = -89.0
 @export var max_pitch: float = 89.0
 
+## Field-of-view kick while sprinting
+@export var fov_default: float = 75.0
+@export var fov_sprint: float = 90.0
+@export var fov_lerp_speed: float = 8.0
+
 @onready var camera_pivot: Node3D = $CameraPivot
+@onready var camera: Camera3D = $CameraPivot/Camera3D
+@onready var model: Node3D = $Model
+
+
+func _enter_tree() -> void:
+	set_multiplayer_authority(name.to_int())
 
 
 func _ready() -> void:
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	var is_local: bool = is_multiplayer_authority()
+	# Only the local player drives the camera and grabs the mouse.
+	camera.current = is_local
+	if is_local:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		camera.fov = fov_default
+	# Show the body for everyone EXCEPT ourselves, so we stay first-person
+	# but remain visible to other players.
+	model.visible = not is_local
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not is_multiplayer_authority():
+		return
+
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		# Yaw turns the whole body; pitch only tilts the head/camera.
 		rotate_y(-event.relative.x * mouse_sensitivity)
@@ -37,6 +59,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if not is_multiplayer_authority():
+		return
+
 	# Gravity
 	if not is_on_floor():
 		velocity += get_gravity() * delta
@@ -49,9 +74,14 @@ func _physics_process(delta: float) -> void:
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction: Vector3 = (transform.basis * Vector3(input_dir.x, 0.0, input_dir.y)).normalized()
 
-	var current_speed: float = sprint_speed if Input.is_action_pressed("sprint") else speed
+	var is_sprinting: bool = Input.is_action_pressed("sprint") and direction.length() > 0.1
+	var current_speed: float = sprint_speed if is_sprinting else speed
 	var target_velocity: Vector3 = direction * current_speed
 	velocity.x = move_toward(velocity.x, target_velocity.x, acceleration * delta * current_speed)
 	velocity.z = move_toward(velocity.z, target_velocity.z, acceleration * delta * current_speed)
+
+	# Smoothly widen the FOV while sprinting for a sense of speed.
+	var target_fov: float = fov_sprint if is_sprinting else fov_default
+	camera.fov = lerp(camera.fov, target_fov, fov_lerp_speed * delta)
 
 	move_and_slide()
