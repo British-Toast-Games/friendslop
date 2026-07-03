@@ -3,6 +3,8 @@
 [ext_resource type="PackedScene" uid="uid://d4nmcr7tmhxf0" path="res://player.tscn" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://dcgt8r61600nd" path="res://HighLevelUI.tscn" id="2_h2yge"]
 [ext_resource type="Script" uid="uid://bls70a6asdhv4" path="res://high_level_multiplayer_spawner.gd" id="3_1bvp3"]
+[ext_resource type="Texture2D" uid="uid://byicox3tvb2nj" path="res://assets/grid textures/Dark/texture_01.png" id="4_lquwl"]
+[ext_resource type="Texture2D" uid="uid://c3o0afe3e15d1" path="res://assets/grid textures/Red/texture_01.png" id="5_lquwl"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 
@@ -24,22 +26,38 @@ size = Vector2(50, 50)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
 albedo_color = Color(0.35, 0.4, 0.35, 1)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lquwl"]
+albedo_texture = ExtResource("4_lquwl")
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_offset = Vector3(0, -0.08, 0.08)
+uv1_triplanar = true
+uv1_world_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7mycd"]
+albedo_texture = ExtResource("5_lquwl")
+uv1_triplanar = true
+uv1_world_triplanar = true
+
 [node name="Main" type="Node3D" unique_id=1349642508]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1635354463]
 environment = SubResource("Environment_1")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1754848797]
-transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 10, 0)
+transform = Transform3D(0.7071068, -0.49999994, 0.5000001, 0, 0.70710695, 0.7071067, -0.7071068, -0.49999994, 0.5000001, 0, 4.3185577, 0)
+light_energy = 1.587
 shadow_enabled = true
 
 [node name="Ground" type="StaticBody3D" parent="." unique_id=609780473]
+visible = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground" unique_id=406505835]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+visible = false
 shape = SubResource("BoxShape3D_ground")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Ground" unique_id=1614118696]
+visible = false
 mesh = SubResource("PlaneMesh_ground")
 surface_material_override/0 = SubResource("StandardMaterial3D_ground")
 
@@ -50,3 +68,21 @@ _spawnable_scenes = PackedStringArray("uid://d4nmcr7tmhxf0")
 spawn_path = NodePath("..")
 script = ExtResource("3_1bvp3")
 network_player = ExtResource("1_player")
+
+[node name="CSGCombiner3D" type="CSGCombiner3D" parent="." unique_id=1041475621]
+use_collision = true
+
+[node name="CSGBox3D" type="CSGBox3D" parent="CSGCombiner3D" unique_id=1438862291]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.42117858, 0.42333984)
+size = Vector3(50, 1, 50)
+material = SubResource("StandardMaterial3D_lquwl")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="CSGCombiner3D" unique_id=1343072392]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -13)
+size = Vector3(2, 2, 2)
+material = SubResource("StandardMaterial3D_7mycd")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="CSGCombiner3D" unique_id=2061799897]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 1, 9)
+size = Vector3(2, 2, 2)
+material = SubResource("StandardMaterial3D_7mycd")
