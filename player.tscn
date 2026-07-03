@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://d4nmcr7tmhxf0"]
 
 [ext_resource type="Script" uid="uid://d3ha4utr4qhoa" path="res://player.gd" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://b21kmnkvm06ix" path="res://gun.tscn" id="2_onrkg"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.4
@@ -50,6 +51,9 @@ surface_material_override/0 = SubResource("StandardMaterial3D_nose")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot" unique_id=284840509]
+
+[node name="Gun" parent="CameraPivot/Camera3D" unique_id=473357079 instance=ExtResource("2_onrkg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56169844, -0.5461719, -1.3349323)
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=983726296]
 replication_config = SubResource("SceneReplicationConfig_4flbx")

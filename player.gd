@@ -22,6 +22,11 @@ extends CharacterBody3D
 @onready var camera: Camera3D = $CameraPivot/Camera3D
 @onready var model: Node3D = $Model
 
+@onready var gun_anim = $CameraPivot/Camera3D/Gun/AnimationPlayer
+@onready var gun_barrel = $CameraPivot/Camera3D/Gun/RayCast3D
+
+var bullet = load("res://bullet.tscn")
+var instance
 
 func _enter_tree() -> void:
 	set_multiplayer_authority(name.to_int())
@@ -80,7 +85,16 @@ func _physics_process(delta: float) -> void:
 
 	# Jump
 	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = jump_velocity      
+		velocity.y = jump_velocity  
+	
+	# Shooting
+	if Input.is_action_pressed("shoot"):
+		if !gun_anim.is_playing():
+			gun_anim.play("Shoot")
+			instance = bullet.instantiate()
+			instance.position = gun_barrel.global_position
+			instance.transform.basis = gun_barrel.global_transform.basis
+			get_parent().add_child(instance)
 
 	# Move relative to where the body is facing.
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
