@@ -32,6 +32,16 @@ func _ready() -> void:
 	if is_local:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		camera.fov = fov_default
+		# We're authoritative over our own position, so the spawn point must be
+		# applied here. The host is both server and authority, so it sets its
+		# point directly; a remote client asks the server over RPC.
+		var spawner: Node = get_tree().get_first_node_in_group("player_spawner")
+		if spawner:
+			if multiplayer.is_server():
+				position = spawner._spawn_point(name.to_int())
+				velocity = Vector3.ZERO
+			else:
+				spawner.request_spawn_point.rpc_id(1)
 	# Show the body for everyone EXCEPT ourselves, so we stay first-person
 	# but remain visible to other players.
 	model.visible = not is_local
@@ -68,7 +78,7 @@ func _physics_process(delta: float) -> void:
 
 	# Jump
 	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = jump_velocity
+		velocity.y = jump_velocity      
 
 	# Move relative to where the body is facing.
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
