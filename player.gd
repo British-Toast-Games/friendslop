@@ -18,9 +18,16 @@ extends CharacterBody3D
 @export var fov_sprint: float = 90.0
 @export var fov_lerp_speed: float = 8.0
 
+## Health (server-authoritative)
+@export var max_health: int = 100
+var health: int = 100
+
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var camera: Camera3D = $CameraPivot/Camera3D
 @onready var model: Node3D = $Model
+
+@onready var hud: CanvasLayer = $HUD
+@onready var health_bar: ProgressBar = $HUD/HealthBar
 
 @onready var gun_anim = $CameraPivot/Camera3D/Gun/AnimationPlayer
 @onready var gun_barrel = $CameraPivot/Camera3D/Gun/RayCast3D
@@ -34,6 +41,16 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	var is_local: bool = is_multiplayer_authority()
+	# Bullets look for players in this group to decide what they can hit.
+	add_to_group("players")
+
+	# Health starts full everywhere; the server drives all later changes.
+	health = max_health
+	health_bar.max_value = max_health
+	health_bar.value = health
+	# Only the local player's HUD is shown.
+	hud.visible = is_local
+
 	# Only the local player drives the camera and grabs the mouse.
 	camera.current = is_local
 	if is_local:
@@ -92,6 +109,7 @@ func _physics_process(delta: float) -> void:
 		if !gun_anim.is_playing():
 			gun_anim.play("Shoot")
 			instance = bullet.instantiate()
+			instance.shooter_id = name.to_int()
 			instance.position = gun_barrel.global_position
 			instance.transform.basis = gun_barrel.global_transform.basis
 			get_parent().add_child(instance)
@@ -111,3 +129,48 @@ func _physics_process(delta: float) -> void:
 	camera.fov = lerp(camera.fov, target_fov, fov_lerp_speed * delta)
 
 	move_and_slide()
+
+
+# --- Health / damage (server-authoritative) --------------------------------
+
+## Called on the server (directly by a host shooter, or via RPC from a client
+## shooter) to deal damage to this player.
+@rpc("any_peer", "call_remote", "reliable")
+func take_damage(amount: int) -> void:
+	if not multiplayer.is_server():
+		return
+	if health <= 0:
+		return
+	health = max(health - amount, 0)
+	_set_health.rpc(health)
+	if health <= 0:
+		_die()
+
+## Server -> everyone: apply the authoritative health value and refresh the HUD.
+@rpc("any_peer", "call_local", "reliable")
+func _set_health(value: int) -> void:
+	health = value
+	if health_bar:
+		health_bar.value = health
+
+func _die() -> void:
+	# Runs on the server. Reset health and send the owner back to its spawn point
+	# (the owner is authoritative over its own position).
+	health = max_health
+	_set_health.rpc(health)
+
+	var owner_id: int = name.to_int()
+	var point: Vector3 = position
+	var spawner: Node = get_tree().get_first_node_in_group("player_spawner")
+	if spawner:
+		point = spawner._spawn_point(owner_id)
+
+	if owner_id == multiplayer.get_unique_id():
+		_respawn_at(point)
+	else:
+		_respawn_at.rpc_id(owner_id, point)
+
+@rpc("any_peer", "call_local", "reliable")
+func _respawn_at(point: Vector3) -> void:
+	position = point
+	velocity = Vector3.ZERO
