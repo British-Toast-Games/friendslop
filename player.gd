@@ -56,6 +56,15 @@ func _ready() -> void:
 	if is_local:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		camera.fov = fov_default
+		# Render ONLY our own viewmodel on top of the world so it doesn't clip
+		# through walls. Other players' guns keep normal depth testing, so they
+		# can't be seen through walls. Default white material keeps the plain,
+		# untextured look.
+		var vm_mat := StandardMaterial3D.new()
+		vm_mat.no_depth_test = true
+		vm_mat.render_priority = 100
+		for gun_mesh in $CameraPivot/Camera3D/Gun.find_children("*", "MeshInstance3D"):
+			gun_mesh.material_override = vm_mat
 		# We're authoritative over our own position, so the spawn point must be
 		# applied here. The host is both server and authority, so it sets its
 		# point directly; a remote client asks the server over RPC.
@@ -111,8 +120,10 @@ func _physics_process(delta: float) -> void:
 			instance = bullet.instantiate()
 			instance.shooter_id = name.to_int()
 			instance.position = gun_barrel.global_position
-			instance.transform.basis = gun_barrel.global_transform.basis
 			get_parent().add_child(instance)
+			# Fire from the barrel but toward where the crosshair points, so the
+			# center-screen crosshair is what actually gets hit.
+			instance.look_at(_get_aim_point())
 
 	# Move relative to where the body is facing.
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -129,6 +140,19 @@ func _physics_process(delta: float) -> void:
 	camera.fov = lerp(camera.fov, target_fov, fov_lerp_speed * delta)
 
 	move_and_slide()
+
+
+## Where the center crosshair is aiming: the first thing a ray straight out of
+## the camera hits, or a far point down that ray if nothing is in the way.
+func _get_aim_point() -> Vector3:
+	var from: Vector3 = camera.global_position
+	var to: Vector3 = from - camera.global_transform.basis.z * 1000.0
+	var query := PhysicsRayQueryParameters3D.create(from, to)
+	query.exclude = [get_rid()]  # never hit our own body
+	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	if hit:
+		return hit.position
+	return to
 
 
 # --- Health / damage (server-authoritative) --------------------------------
