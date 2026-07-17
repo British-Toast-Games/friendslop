@@ -77,6 +77,7 @@ curve = SubResource("Curve_nsm00")
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_tbu6m"]
 gravity = Vector3(0, 0, 0)
+scale_max = 1.5
 scale_curve = SubResource("CurveTexture_g3y3w")
 color = Color(1.3528494, 1.3528494, 1.3528494, 1)
 alpha_curve = SubResource("CurveTexture_uerdb")
@@ -90,6 +91,28 @@ vertex_color_use_as_albedo = true
 vertex_color_is_srgb = true
 albedo_texture = ExtResource("3_k8v55")
 uv1_scale = Vector3(-1, -1, -1)
+
+[sub_resource type="Curve" id="Curve_pr6yj"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_k8v55"]
+curve = SubResource("Curve_pr6yj")
+
+[sub_resource type="Curve" id="Curve_5k1dv"]
+_data = [Vector2(0.091240875, 0), 0.0, 3.22538, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_1q2t8"]
+curve = SubResource("Curve_5k1dv")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ffpt7"]
+gravity = Vector3(0, 0, 0)
+scale_min = 0.79999995
+scale_max = 0.79999995
+scale_curve = SubResource("CurveTexture_1q2t8")
+color = Color(1.3528494, 1.3528494, 1.3528494, 1)
+alpha_curve = SubResource("CurveTexture_k8v55")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4e65p"]
 transparency = 1
@@ -155,6 +178,53 @@ scale_curve = SubResource("CurveTexture_pr6yj")
 [sub_resource type="BoxMesh" id="BoxMesh_5k1dv"]
 size = Vector3(0.1, 0.1, 0.1)
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pr6yj"]
+properties/0/path = NodePath("GPUParticles3D:emitting")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath("GPUParticles3D2:emitting")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("GPUParticles3D3:emitting")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath("GPUParticles3D4:emitting")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath("HitParticles:emitting")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_pr6yj"]
+load_path = "res://.godot/imported/flash.png-254181dc56c228c5b176c3617b0cf5d4.s3tc.ctex"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k8v55"]
+transparency = 1
+blend_mode = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = SubResource("CompressedTexture2D_pr6yj")
+
+[sub_resource type="Curve" id="Curve_1q2t8"]
+_data = [Vector2(0, 1), 0.0, -2.6419284, 0, 0, Vector2(1, 0), -0.056269184, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_ffpt7"]
+curve = SubResource("Curve_1q2t8")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_pact7"]
+particle_flag_align_y = true
+direction = Vector3(1, 0, -1)
+spread = 2.0
+initial_velocity_min = 50.0
+initial_velocity_max = 50.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.29999998
+scale_max = 0.29999998
+alpha_curve = SubResource("CurveTexture_ffpt7")
+
 [node name="Gun" type="Node3D" unique_id=1748257869]
 
 [node name="Mesh" type="MeshInstance3D" parent="." unique_id=473357079]
@@ -175,7 +245,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.837375e-10, 0, -0.5374797)
 target_position = Vector3(0, 0, -1)
 
 [node name="GPUParticles3D" type="GPUParticles3D" parent="." unique_id=1469456918]
-transform = Transform3D(1, 0, 0, 0, -1, 8.742278e-08, 0, -8.742278e-08, -1, 0, 0, -0.424)
+transform = Transform3D(0.70710677, -0.70710677, 0, -0.70710677, -0.70710677, 8.742278e-08, -6.181724e-08, -6.181724e-08, -1, 0, 0, -0.424)
 material_override = SubResource("StandardMaterial3D_ffpt7")
 emitting = false
 amount = 1
@@ -195,7 +265,7 @@ lifetime = 0.09999999999999999
 one_shot = true
 randomness = 1.0
 fixed_fps = 60
-process_material = SubResource("ParticleProcessMaterial_tbu6m")
+process_material = SubResource("ParticleProcessMaterial_ffpt7")
 draw_pass_1 = ExtResource("4_5k1dv")
 
 [node name="GPUParticles3D3" type="GPUParticles3D" parent="." unique_id=1237450544]
@@ -240,3 +310,19 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.5811655)
 stream = ExtResource("6_pr6yj")
 volume_db = -30.0
 attenuation_filter_cutoff_hz = 20500.0
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1693509143]
+replication_config = SubResource("SceneReplicationConfig_pr6yj")
+
+[node name="GPUParticles3D5" type="GPUParticles3D" parent="." unique_id=1555235136]
+transform = Transform3D(0.61599994, 0.020455109, 0.7874805, 0.09772007, 0.9899568, -0.10215515, -0.7816617, 0.13988042, 0.60781485, 0, 0, -0.5414969)
+material_override = SubResource("StandardMaterial3D_k8v55")
+emitting = false
+amount = 1
+lifetime = 0.09999999999999999
+one_shot = true
+explosiveness = 0.7
+randomness = 1.0
+fixed_fps = 60
+process_material = SubResource("ParticleProcessMaterial_pact7")
+draw_pass_1 = SubResource("QuadMesh_dsftm")

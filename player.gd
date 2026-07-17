@@ -37,6 +37,7 @@ var health: int = 100
 @onready var cone: GPUParticles3D = $CameraPivot/Camera3D/Gun/GPUParticles3D2
 @onready var flash: GPUParticles3D = $CameraPivot/Camera3D/Gun/GPUParticles3D3
 @onready var spark: GPUParticles3D = $CameraPivot/Camera3D/Gun/GPUParticles3D4
+@onready var bullet: GPUParticles3D = $CameraPivot/Camera3D/Gun/GPUParticles3D5
 @onready var hitParticles: GPUParticles3D = $CameraPivot/Camera3D/Gun/HitParticles
 
 @onready var gunshot: AudioStreamPlayer3D = $CameraPivot/Camera3D/Gun/AudioStreamPlayer3D
@@ -131,11 +132,13 @@ func _physics_process(delta: float) -> void:
 			cone.restart()
 			flash.restart()
 			spark.restart()
+			bullet.restart()
 			
 			muzzle.emitting = true
 			cone.emitting = true
 			flash.emitting = true
 			spark.emitting = true
+			bullet.emitting = true
 			gunshot.play()
 			
 			bullet_hitscan()

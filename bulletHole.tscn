@@ -10,6 +10,8 @@ albedo_texture = ExtResource("2_w7cuk")
 
 [sub_resource type="QuadMesh" id="QuadMesh_ndt6f"]
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_w7cuk"]
+
 [node name="BulletHole" type="Node3D" unique_id=1042327760]
 script = ExtResource("1_ndt6f")
 
@@ -23,5 +25,9 @@ mesh = SubResource("QuadMesh_ndt6f")
 wait_time = 10.0
 one_shot = true
 autostart = true
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=688479720]
+root_path = NodePath("../Timer")
+replication_config = SubResource("SceneReplicationConfig_w7cuk")
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
