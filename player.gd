@@ -220,20 +220,16 @@ func bullet_hitscan():
 
 	# Spawn bullet hole
 	if collider:
-		var decal = b_decal.instantiate()
-		collider.add_child(decal)
-		decal.global_position = hit.position
-		decal.look_at(hit.position + hit.normal, Vector3.UP)
+		create_bullet_hole.rpc(collider.get_path(), hit.position, hit.normal)
+		play_hit_particles.rpc(hit.position)
 		
-		hitParticles.global_position = hit.position
-		hitParticles.restart()
-		hitParticles.emitting = true
+		print(collider)
 		
-		if collider.name == "Dummy":
+		if collider.is_in_group("players") || collider.name == "Dummy":
 			hitMarkerSound.play()
 			hitMarkerIcon.visible = true
 			hitMarkerTimer.start()
-			damageText.spawn_label(10, hit.position)
+			spawn_damage_number.rpc(10, hit.position)
 
 
 # --- Health / damage (server-authoritative) --------------------------------
@@ -286,3 +282,24 @@ func _on_reload_timeout():
 
 func _on_hm_timeout():
 	hitMarkerIcon.visible = false
+
+
+
+## MULTIPLAYER STUFF (RPC)
+@rpc("call_local", "reliable")
+func create_bullet_hole(node_path: NodePath, pos: Vector3, normal: Vector3):
+	var collider = get_node(node_path)
+	var decal = b_decal.instantiate()
+	collider.add_child(decal)
+	decal.global_position = pos
+	decal.look_at(pos + normal, Vector3.UP)
+
+@rpc("call_local", "reliable")
+func play_hit_particles(pos: Vector3):
+	hitParticles.global_position = pos
+	hitParticles.restart()
+	hitParticles.emitting = true
+
+@rpc("call_local", "reliable")
+func spawn_damage_number(amount: int, pos: Vector3):
+	damageText.spawn_label(amount, pos)
