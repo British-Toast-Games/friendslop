@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://b84hhrl3djxja"]
+
+[ext_resource type="Script" uid="uid://lff1o8hwksry" path="res://bullet_hole.gd" id="1_ndt6f"]
+[ext_resource type="Texture2D" uid="uid://c1b52w8bfaq5s" path="res://assets/bulletHole.png" id="2_w7cuk"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ct5rs"]
+transparency = 1
+albedo_color = Color(0.22094142, 0.22094142, 0.22094142, 1)
+albedo_texture = ExtResource("2_w7cuk")
+
+[sub_resource type="QuadMesh" id="QuadMesh_ndt6f"]
+
+[node name="BulletHole" type="Node3D" unique_id=1042327760]
+script = ExtResource("1_ndt6f")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=367671906]
+transform = Transform3D(-0.105, 0, -1.5854559e-08, 0, 0.105, 0, 1.5854559e-08, 0, -0.105, 0, 0, -0.02)
+material_override = SubResource("StandardMaterial3D_ct5rs")
+cast_shadow = 0
+mesh = SubResource("QuadMesh_ndt6f")
+
+[node name="Timer" type="Timer" parent="." unique_id=867801574]
+wait_time = 10.0
+one_shot = true
+autostart = true
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

@@ -32,8 +32,15 @@ var health: int = 100
 @onready var gun_anim = $CameraPivot/Camera3D/Gun/AnimationPlayer
 @onready var gun_barrel = $CameraPivot/Camera3D/Gun/RayCast3D
 
-var bullet = load("res://bullet.tscn")
-var instance
+@onready var b_decal = preload("res://bulletHole.tscn")
+@onready var muzzle: GPUParticles3D = $CameraPivot/Camera3D/Gun/GPUParticles3D
+@onready var cone: GPUParticles3D = $CameraPivot/Camera3D/Gun/GPUParticles3D2
+@onready var flash: GPUParticles3D = $CameraPivot/Camera3D/Gun/GPUParticles3D3
+@onready var spark: GPUParticles3D = $CameraPivot/Camera3D/Gun/GPUParticles3D4
+@onready var hitParticles: GPUParticles3D = $CameraPivot/Camera3D/Gun/HitParticles
+
+## var bullet = load("res://bullet.tscn")
+## var instance
 
 func _enter_tree() -> void:
 	set_multiplayer_authority(name.to_int())
@@ -117,13 +124,25 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_pressed("shoot"):
 		if !gun_anim.is_playing():
 			gun_anim.play("Shoot")
-			instance = bullet.instantiate()
-			instance.shooter_id = name.to_int()
-			instance.position = gun_barrel.global_position
-			get_parent().add_child(instance)
+			
+			muzzle.restart()
+			cone.restart()
+			flash.restart()
+			spark.restart()
+			
+			muzzle.emitting = true
+			cone.emitting = true
+			flash.emitting = true
+			spark.emitting = true
+			
+			bullet_hitscan()
+			## instance = bullet.instantiate()
+			## instance.shooter_id = name.to_int()
+			## instance.position = gun_barrel.global_position
+			## et_parent().add_child(instance)
 			# Fire from the barrel but toward where the crosshair points, so the
 			# center-screen crosshair is what actually gets hit.
-			instance.look_at(_get_aim_point())
+			## instance.look_at(_get_aim_point())
 
 	# Move relative to where the body is facing.
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -153,6 +172,29 @@ func _get_aim_point() -> Vector3:
 	if hit:
 		return hit.position
 	return to
+
+
+func bullet_hitscan():
+	var query := PhysicsRayQueryParameters3D.create(camera.global_position, _get_aim_point())
+	query.exclude = [self]
+
+	var hit = get_world_3d().direct_space_state.intersect_ray(query)
+
+	if hit.is_empty():
+		return
+
+	var collider = hit.collider
+
+	# Spawn bullet hole
+	if collider:
+		var decal = b_decal.instantiate()
+		collider.add_child(decal)
+		decal.global_position = hit.position
+		decal.look_at(hit.position + hit.normal, Vector3.UP)
+		
+		hitParticles.global_position = hit.position
+		hitParticles.restart()
+		hitParticles.emitting = true
 
 
 # --- Health / damage (server-authoritative) --------------------------------

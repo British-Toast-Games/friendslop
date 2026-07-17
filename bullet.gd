@@ -1,6 +1,16 @@
+##NOT CURRENTLY IN USE
+
+
+
+
+
+
+
+
+
 extends Node3D
 
-const SPEED = 40
+const SPEED = 80
 
 ## Who fired this bullet (peer id), so we don't damage ourselves. Set by the
 ## shooter before the bullet is added to the tree.
@@ -20,6 +30,13 @@ func _process(delta):
 	position += transform.basis * Vector3(0, 0, -SPEED) * delta
 
 	if ray.is_colliding():
+		var collider = ray.get_collider()
+		if collider:
+			var decal = preload("res://bulletHole.tscn").instantiate()
+			collider.add_child(decal)
+			decal.global_position = ray.get_collision_point()
+			decal.look_at(ray.get_collision_point() + ray.get_collision_normal(), Vector3.UP)
+		
 		_hit_registered = true
 
 		var target = ray.get_collider()

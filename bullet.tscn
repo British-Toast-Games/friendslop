@@ -17,10 +17,18 @@ emission_enabled = true
 emission = Color(0.5686275, 1, 0.3137255, 1)
 emission_energy_multiplier = 15.0
 
+[sub_resource type="Curve" id="Curve_v7oki"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.058181815, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.48864132, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_v8qja"]
+curve = SubResource("Curve_v7oki")
+
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_v8qja"]
 direction = Vector3(0, 0, 1)
 initial_velocity_min = 3.0
 initial_velocity_max = 5.0
+scale_curve = SubResource("CurveTexture_v8qja")
 
 [sub_resource type="BoxMesh" id="BoxMesh_t4vbm"]
 size = Vector3(0.08, 0.08, 0.08)
