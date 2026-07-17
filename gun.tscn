@@ -6,6 +6,25 @@
 [ext_resource type="ArrayMesh" uid="uid://dtae1yxmkkc31" path="res://assets/muzzleCone.obj" id="4_5k1dv"]
 [ext_resource type="Texture2D" uid="uid://b47n1jen7x26u" path="res://assets/flash.png" id="5_1q2t8"]
 [ext_resource type="AudioStream" uid="uid://cjpcj3doo7vyu" path="res://assets/GunshotMachineGun_BW.56743.wav" id="6_pr6yj"]
+[ext_resource type="AudioStream" uid="uid://mmxpr7msmtun" path="res://assets/hitmarker.wav" id="7_k8v55"]
+
+[sub_resource type="GDScript" id="GDScript_k8v55"]
+script/source = "extends Node3D
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+	pass
+
+
+func _on_timer_timeout() -> void:
+	pass # Replace with function body.
+"
 
 [sub_resource type="BoxMesh" id="BoxMesh_r8ywq"]
 size = Vector3(0.2, 0.2, 1)
@@ -178,6 +197,11 @@ scale_curve = SubResource("CurveTexture_pr6yj")
 [sub_resource type="BoxMesh" id="BoxMesh_5k1dv"]
 size = Vector3(0.1, 0.1, 0.1)
 
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_pr6yj"]
+random_pitch = 1.0243201
+streams_count = 1
+stream_0/stream = ExtResource("6_pr6yj")
+
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pr6yj"]
 properties/0/path = NodePath("GPUParticles3D:emitting")
 properties/0/spawn = true
@@ -225,7 +249,13 @@ scale_min = 0.29999998
 scale_max = 0.29999998
 alpha_curve = SubResource("CurveTexture_ffpt7")
 
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_5k1dv"]
+random_pitch = 1.0662162
+streams_count = 1
+stream_0/stream = ExtResource("7_k8v55")
+
 [node name="Gun" type="Node3D" unique_id=1748257869]
+script = SubResource("GDScript_k8v55")
 
 [node name="Mesh" type="MeshInstance3D" parent="." unique_id=473357079]
 cast_shadow = 0
@@ -238,7 +268,7 @@ mesh = SubResource("BoxMesh_vk1bi")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1884498234]
 libraries/ = SubResource("AnimationLibrary_dk5gl")
-speed_scale = 3.0
+speed_scale = 5.0
 
 [node name="RayCast3D" type="RayCast3D" parent="." unique_id=1188205343]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.837375e-10, 0, -0.5374797)
@@ -307,7 +337,7 @@ draw_pass_1 = SubResource("BoxMesh_5k1dv")
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=1396752207]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.5811655)
-stream = ExtResource("6_pr6yj")
+stream = SubResource("AudioStreamRandomizer_pr6yj")
 volume_db = -30.0
 attenuation_filter_cutoff_hz = 20500.0
 
@@ -326,3 +356,11 @@ randomness = 1.0
 fixed_fps = 60
 process_material = SubResource("ParticleProcessMaterial_pact7")
 draw_pass_1 = SubResource("QuadMesh_dsftm")
+
+[node name="AudioStreamPlayer3D2" type="AudioStreamPlayer3D" parent="." unique_id=1297796559]
+stream = SubResource("AudioStreamRandomizer_5k1dv")
+volume_db = -20.0
+attenuation_filter_cutoff_hz = 20500.0
+
+[node name="Timer" type="Timer" parent="." unique_id=909308848]
+one_shot = true

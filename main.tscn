@@ -5,6 +5,9 @@
 [ext_resource type="Script" uid="uid://bls70a6asdhv4" path="res://high_level_multiplayer_spawner.gd" id="3_1bvp3"]
 [ext_resource type="Texture2D" uid="uid://byicox3tvb2nj" path="res://assets/grid textures/Dark/texture_01.png" id="4_lquwl"]
 [ext_resource type="Texture2D" uid="uid://c3o0afe3e15d1" path="res://assets/grid textures/Red/texture_01.png" id="5_lquwl"]
+[ext_resource type="Texture2D" uid="uid://psy2fyl2tsh5" path="res://assets/grid textures/Purple/texture_01.png" id="6_7mycd"]
+[ext_resource type="Script" uid="uid://cfboi86vqhkpy" path="res://dummy.gd" id="6_272bh"]
+[ext_resource type="Script" uid="uid://b4gvxe7blpuu3" path="res://damage_number_script.gd" id="8_5vw27"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 
@@ -38,6 +41,16 @@ uv1_triplanar = true
 uv1_world_triplanar = true
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_lquwl"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_272bh"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5vw27"]
+albedo_texture = ExtResource("6_7mycd")
+uv1_scale = Vector3(1, 1, -1)
+uv1_triplanar = true
+uv1_world_triplanar = true
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_272bh"]
 
 [node name="Main" type="Node3D" unique_id=1349642508]
 
@@ -90,3 +103,22 @@ surface_material_override/0 = SubResource("StandardMaterial3D_272bh")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2" unique_id=2025964945]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 1, 0)
 shape = SubResource("BoxShape3D_lquwl")
+
+[node name="Dummy" type="StaticBody3D" parent="." unique_id=1054955355]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 0)
+script = ExtResource("6_272bh")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Dummy" unique_id=2118453613]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("CapsuleMesh_272bh")
+surface_material_override/0 = SubResource("StandardMaterial3D_5vw27")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Dummy" unique_id=972766951]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_272bh")
+
+[node name="DamageNumberSpawner" type="Node3D" parent="Dummy" unique_id=1983276733]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, 0)
+script = ExtResource("8_5vw27")
+color = Color(1, 1, 1, 1)
+metadata/_custom_type_script = "uid://b4gvxe7blpuu3"

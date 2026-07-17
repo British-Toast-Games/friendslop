@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://d3ha4utr4qhoa" path="res://player.gd" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://b21kmnkvm06ix" path="res://gun.tscn" id="2_onrkg"]
+[ext_resource type="Texture2D" uid="uid://c56sg1yitrv8r" path="res://assets/hitmarker.png" id="3_i3pqv"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.4
@@ -30,6 +31,9 @@ properties/1/replication_mode = 1
 properties/2/path = NodePath(".:max_health")
 properties/2/spawn = true
 properties/2/replication_mode = 1
+
+[sub_resource type="LabelSettings" id="LabelSettings_onrkg"]
+font_size = 45
 
 [node name="Player" type="CharacterBody3D" unique_id=736407277]
 script = ExtResource("1_player")
@@ -100,3 +104,24 @@ offset_top = -8.0
 offset_right = 1.0
 offset_bottom = 8.0
 mouse_filter = 2
+
+[node name="Label" type="Label" parent="HUD" unique_id=2138262684]
+offset_left = 1014.0
+offset_top = 573.0
+offset_right = 1148.0
+offset_bottom = 639.0
+text = "50/50"
+label_settings = SubResource("LabelSettings_onrkg")
+
+[node name="hitMarker" type="TextureRect" parent="HUD" unique_id=1402117201]
+visible = false
+offset_left = 551.0
+offset_top = 299.0
+offset_right = 601.0
+offset_bottom = 349.0
+texture = ExtResource("3_i3pqv")
+expand_mode = 1
+
+[node name="hitMarkerTimer" type="Timer" parent="." unique_id=835724040]
+wait_time = 0.1
+one_shot = true

@@ -22,6 +22,8 @@ extends CharacterBody3D
 @export var max_health: int = 100
 var health: int = 100
 
+@export var magazine = 50
+
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var camera: Camera3D = $CameraPivot/Camera3D
 @onready var model: Node3D = $Model
@@ -41,6 +43,14 @@ var health: int = 100
 @onready var hitParticles: GPUParticles3D = $CameraPivot/Camera3D/Gun/HitParticles
 
 @onready var gunshot: AudioStreamPlayer3D = $CameraPivot/Camera3D/Gun/AudioStreamPlayer3D
+@onready var hitMarkerSound: AudioStreamPlayer3D = $CameraPivot/Camera3D/Gun/AudioStreamPlayer3D2
+@onready var hitMarkerIcon: TextureRect = $HUD/hitMarker
+@onready var hitMarkerTimer: Timer = $hitMarkerTimer
+
+@onready var reload: Timer = $CameraPivot/Camera3D/Gun/Timer
+@onready var ammoLabel: Label = $HUD/Label
+
+@onready var damageText: DamageNumberSpawner = $"../Dummy/DamageNumberSpawner"
 
 ## var bullet = load("res://bullet.tscn")
 ## var instance
@@ -50,6 +60,12 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	if !reload.timeout.is_connected(_on_reload_timeout):
+		reload.timeout.connect(_on_reload_timeout)
+		
+	if !hitMarkerTimer.timeout.is_connected(_on_hm_timeout):
+		hitMarkerTimer.timeout.connect(_on_hm_timeout)
+		
 	var is_local: bool = is_multiplayer_authority()
 	# Bullets look for players in this group to decide what they can hit.
 	add_to_group("players")
@@ -125,7 +141,7 @@ func _physics_process(delta: float) -> void:
 	
 	# Shooting
 	if Input.is_action_pressed("shoot"):
-		if !gun_anim.is_playing():
+		if !gun_anim.is_playing() && magazine > 0 && reload.is_stopped():
 			gun_anim.play("Shoot")
 			
 			muzzle.restart()
@@ -142,6 +158,13 @@ func _physics_process(delta: float) -> void:
 			gunshot.play()
 			
 			bullet_hitscan()
+			
+			magazine -= 1
+			ammoLabel.text = "%d/50" % magazine
+
+			if magazine <= 0:
+				reload.start()
+				ammoLabel.text = "--/50"
 			## instance = bullet.instantiate()
 			## instance.shooter_id = name.to_int()
 			## instance.position = gun_barrel.global_position
@@ -149,6 +172,10 @@ func _physics_process(delta: float) -> void:
 			# Fire from the barrel but toward where the crosshair points, so the
 			# center-screen crosshair is what actually gets hit.
 			## instance.look_at(_get_aim_point())
+			
+	if Input.is_action_pressed("reload"):
+		ammoLabel.text = "--/50"
+		reload.start()
 
 	# Move relative to where the body is facing.
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -201,6 +228,12 @@ func bullet_hitscan():
 		hitParticles.global_position = hit.position
 		hitParticles.restart()
 		hitParticles.emitting = true
+		
+		if collider.name == "Dummy":
+			hitMarkerSound.play()
+			hitMarkerIcon.visible = true
+			hitMarkerTimer.start()
+			damageText.spawn_label(10, hit.position)
 
 
 # --- Health / damage (server-authoritative) --------------------------------
@@ -246,3 +279,10 @@ func _die() -> void:
 func _respawn_at(point: Vector3) -> void:
 	position = point
 	velocity = Vector3.ZERO
+
+func _on_reload_timeout():
+	magazine = 50
+	ammoLabel.text = "%d/50" % magazine
+
+func _on_hm_timeout():
+	hitMarkerIcon.visible = false
