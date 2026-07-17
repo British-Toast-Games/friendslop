@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://ctr0j0au5yhe5" path="res://assets/muzzleCone.png" id="3_k8v55"]
 [ext_resource type="ArrayMesh" uid="uid://dtae1yxmkkc31" path="res://assets/muzzleCone.obj" id="4_5k1dv"]
 [ext_resource type="Texture2D" uid="uid://b47n1jen7x26u" path="res://assets/flash.png" id="5_1q2t8"]
+[ext_resource type="AudioStream" uid="uid://cjpcj3doo7vyu" path="res://assets/GunshotMachineGun_BW.56743.wav" id="6_pr6yj"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_r8ywq"]
 size = Vector3(0.2, 0.2, 1)
@@ -233,3 +234,9 @@ explosiveness = 0.8
 randomness = 1.0
 process_material = SubResource("ParticleProcessMaterial_k8v55")
 draw_pass_1 = SubResource("BoxMesh_5k1dv")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=1396752207]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.5811655)
+stream = ExtResource("6_pr6yj")
+volume_db = -30.0
+attenuation_filter_cutoff_hz = 20500.0

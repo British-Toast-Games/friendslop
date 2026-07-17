@@ -39,6 +39,8 @@ var health: int = 100
 @onready var spark: GPUParticles3D = $CameraPivot/Camera3D/Gun/GPUParticles3D4
 @onready var hitParticles: GPUParticles3D = $CameraPivot/Camera3D/Gun/HitParticles
 
+@onready var gunshot: AudioStreamPlayer3D = $CameraPivot/Camera3D/Gun/AudioStreamPlayer3D
+
 ## var bullet = load("res://bullet.tscn")
 ## var instance
 
@@ -134,6 +136,7 @@ func _physics_process(delta: float) -> void:
 			cone.emitting = true
 			flash.emitting = true
 			spark.emitting = true
+			gunshot.play()
 			
 			bullet_hitscan()
 			## instance = bullet.instantiate()
