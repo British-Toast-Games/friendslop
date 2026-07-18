@@ -23,6 +23,7 @@ extends CharacterBody3D
 var health: int = 100
 
 @export var magazine = 50
+@export var damage: int = 10
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var camera: Camera3D = $CameraPivot/Camera3D
@@ -45,12 +46,14 @@ var health: int = 100
 @onready var gunshot: AudioStreamPlayer3D = $CameraPivot/Camera3D/Gun/AudioStreamPlayer3D
 @onready var hitMarkerSound: AudioStreamPlayer3D = $CameraPivot/Camera3D/Gun/AudioStreamPlayer3D2
 @onready var hitMarkerIcon: TextureRect = $HUD/hitMarker
+@onready var killMarkerIcon: TextureRect = $HUD/killMarker
 @onready var hitMarkerTimer: Timer = $hitMarkerTimer
 
 @onready var reload: Timer = $CameraPivot/Camera3D/Gun/Timer
 @onready var ammoLabel: Label = $HUD/Label
 
 @onready var damageText: DamageNumberSpawner = $"../Dummy/DamageNumberSpawner"
+@onready var killcam = $KillCam
 
 ## var bullet = load("res://bullet.tscn")
 ## var instance
@@ -223,13 +226,25 @@ func bullet_hitscan():
 		create_bullet_hole.rpc(collider.get_path(), hit.position, hit.normal)
 		play_hit_particles.rpc(hit.position)
 		
-		print(collider)
+		#print(collider)
 		
-		if collider.is_in_group("players") || collider.name == "Dummy":
+		if collider.is_in_group("players"):
 			hitMarkerSound.play()
 			hitMarkerIcon.visible = true
 			hitMarkerTimer.start()
 			spawn_damage_number.rpc(10, hit.position)
+			
+			if multiplayer.is_server():
+				collider.take_damage(damage, get_path())
+			else:
+				collider.take_damage.rpc_id(1, damage, get_path())
+				
+		elif collider.name == "Dummy":
+			hitMarkerSound.play()
+			hitMarkerIcon.visible = true
+			hitMarkerTimer.start()
+
+			spawn_damage_number.rpc(damage, hit.position)
 
 
 # --- Health / damage (server-authoritative) --------------------------------
@@ -237,7 +252,7 @@ func bullet_hitscan():
 ## Called on the server (directly by a host shooter, or via RPC from a client
 ## shooter) to deal damage to this player.
 @rpc("any_peer", "call_remote", "reliable")
-func take_damage(amount: int) -> void:
+func take_damage(amount: int, attacker_path:NodePath) -> void:
 	if not multiplayer.is_server():
 		return
 	if health <= 0:
@@ -245,7 +260,7 @@ func take_damage(amount: int) -> void:
 	health = max(health - amount, 0)
 	_set_health.rpc(health)
 	if health <= 0:
-		_die()
+		_die(attacker_path)
 
 ## Server -> everyone: apply the authoritative health value and refresh the HUD.
 @rpc("any_peer", "call_local", "reliable")
@@ -254,22 +269,13 @@ func _set_health(value: int) -> void:
 	if health_bar:
 		health_bar.value = health
 
-func _die() -> void:
+func _die(attacker_path:NodePath) -> void:
 	# Runs on the server. Reset health and send the owner back to its spawn point
 	# (the owner is authoritative over its own position).
+	
+	play_killcam(attacker_path)
 	health = max_health
 	_set_health.rpc(health)
-
-	var owner_id: int = name.to_int()
-	var point: Vector3 = position
-	var spawner: Node = get_tree().get_first_node_in_group("player_spawner")
-	if spawner:
-		point = spawner._spawn_point(owner_id)
-
-	if owner_id == multiplayer.get_unique_id():
-		_respawn_at(point)
-	else:
-		_respawn_at.rpc_id(owner_id, point)
 
 @rpc("any_peer", "call_local", "reliable")
 func _respawn_at(point: Vector3) -> void:
@@ -303,3 +309,22 @@ func play_hit_particles(pos: Vector3):
 @rpc("call_local", "reliable")
 func spawn_damage_number(amount: int, pos: Vector3):
 	damageText.spawn_label(amount, pos)
+
+@rpc("authority", "call_local", "reliable")
+func play_killcam(attacker_path: NodePath):
+	var owner_id: int = name.to_int()
+	var point: Vector3 = position
+	var spawner: Node = get_tree().get_first_node_in_group("player_spawner")
+	if spawner:
+		point = spawner._spawn_point(owner_id)
+
+	if owner_id == multiplayer.get_unique_id():
+		_respawn_at(point)
+	else:
+		_respawn_at.rpc_id(owner_id, point)
+	
+	var killer = get_node(attacker_path)
+	hide()
+	killcam.start(killer)
+	await killcam.finished
+	show()

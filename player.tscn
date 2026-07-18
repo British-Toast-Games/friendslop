@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://d3ha4utr4qhoa" path="res://player.gd" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://b21kmnkvm06ix" path="res://gun.tscn" id="2_onrkg"]
 [ext_resource type="Texture2D" uid="uid://c56sg1yitrv8r" path="res://assets/hitmarker.png" id="3_i3pqv"]
+[ext_resource type="Script" uid="uid://5yghvpu2xrlq" path="res://kill_cam.gd" id="4_hqtel"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.4
@@ -34,6 +35,46 @@ properties/2/replication_mode = 1
 
 [sub_resource type="LabelSettings" id="LabelSettings_onrkg"]
 font_size = 45
+
+[sub_resource type="Animation" id="Animation_i3pqv"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_hqtel"]
+resource_name = "killCam"
+length = 5.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 6.2831855, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_sweqy"]
+_data = {
+&"RESET": SubResource("Animation_i3pqv"),
+&"killCam": SubResource("Animation_hqtel")
+}
+
+[sub_resource type="LabelSettings" id="LabelSettings_hqtel"]
+font_size = 30
 
 [node name="Player" type="CharacterBody3D" unique_id=736407277]
 script = ExtResource("1_player")
@@ -122,6 +163,37 @@ offset_bottom = 349.0
 texture = ExtResource("3_i3pqv")
 expand_mode = 1
 
+[node name="killMarker" type="TextureRect" parent="HUD" unique_id=443022856]
+visible = false
+modulate = Color(1, 0, 0, 1)
+offset_left = 543.0
+offset_top = 291.0
+offset_right = 609.0
+offset_bottom = 357.0
+texture = ExtResource("3_i3pqv")
+expand_mode = 1
+
 [node name="hitMarkerTimer" type="Timer" parent="." unique_id=835724040]
 wait_time = 0.1
 one_shot = true
+
+[node name="KillCam" type="Node3D" parent="." unique_id=1018948413]
+script = ExtResource("4_hqtel")
+
+[node name="Camera3D" type="Camera3D" parent="KillCam" unique_id=84149051]
+transform = Transform3D(-1, -7.619397e-09, 8.709011e-08, 0, 0.9961947, 0.08715574, -8.742278e-08, 0.08715574, -0.9961947, 0, 3, -6)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="KillCam" unique_id=1239631871]
+libraries/ = SubResource("AnimationLibrary_sweqy")
+speed_scale = 2.0
+
+[node name="killInfo" type="CanvasLayer" parent="KillCam" unique_id=1834179013]
+
+[node name="Label" type="Label" parent="KillCam/killInfo" unique_id=517674935]
+offset_left = 434.0
+offset_top = 520.0
+offset_right = 695.0
+offset_bottom = 629.0
+label_settings = SubResource("LabelSettings_hqtel")
+horizontal_alignment = 1
+vertical_alignment = 1
